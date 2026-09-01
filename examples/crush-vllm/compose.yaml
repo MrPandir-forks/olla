@@ -56,7 +56,7 @@ services:
 
   # Olla - Proxy and load balancer with API translation
   olla:
-    image: ghcr.io/MrPandir-forks/olla:latest
+    image: ghcr.io/mrpandir-forks/olla:latest
     container_name: olla
     restart: unless-stopped
     ports:
