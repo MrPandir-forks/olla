@@ -1,7 +1,7 @@
 services:
   # Olla proxy - connects to LM Studio running on host machine
   olla:
-    image: ghcr.io/MrPandir-forks/olla:latest
+    image: ghcr.io/mrpandir-forks/olla:latest
     container_name: olla
     restart: unless-stopped
     ports:

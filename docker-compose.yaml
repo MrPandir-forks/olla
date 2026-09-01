@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   olla:
-    image: ghcr.io/MrPandir-forks/olla:latest
+    image: ghcr.io/mrpandir-forks/olla:latest
     container_name: olla
     ports:
       - "40114:40114"
