@@ -32,6 +32,9 @@ const (
 	RoutingReasonDiscoveryError                = "discovery_error"
 )
 
+// StickyOutcomeResultDisabled indicates sticky sessions are not in use.
+const StickyOutcomeResultDisabled = "disabled"
+
 // Fallback behavior constants for routing strategies
 const (
 	// FallbackBehaviorNone never falls back to other endpoints

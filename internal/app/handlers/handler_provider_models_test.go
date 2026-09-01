@@ -409,7 +409,7 @@ func TestModelAliasesMode(t *testing.T) {
 				"my-llama": {"llama3:latest"},
 				"my-gpt":   {"gpt-3.5-turbo"},
 			},
-			modelAliasesMode:   "disabled",
+			modelAliasesMode:   constants.StickyOutcomeResultDisabled,
 			expectedModelCount: 2, // only llama3:latest and gpt-3.5-turbo
 			expectedIDs:        []string{"llama3:latest", "gpt-3.5-turbo"},
 			notExpectedIDs:     []string{"my-llama", "my-gpt"},

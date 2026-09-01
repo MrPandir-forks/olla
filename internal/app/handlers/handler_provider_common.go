@@ -251,7 +251,7 @@ func (a *Application) convertModelsToProviderFormat(models []*domain.UnifiedMode
 // If ModelAliasesMode is "hidden" or "append", creates synthetic UnifiedModel entries
 // for each alias. In "hidden" mode, filters out target models that appear in any alias.
 func (a *Application) injectConfiguredAliases(ctx context.Context, models []*domain.UnifiedModel) []*domain.UnifiedModel {
-	if a.aliasResolver == nil || a.Config.ModelAliasesMode == "disabled" {
+	if a.aliasResolver == nil || a.Config.ModelAliasesMode == constants.StickyOutcomeResultDisabled {
 		return models
 	}
 
