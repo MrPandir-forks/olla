@@ -220,10 +220,7 @@ func (a *Application) getProviderModels(ctx context.Context, providerType string
 	}
 
 	// Inject configured aliases (add alias models, optionally hide targets)
-	modelsWithAliases, err := a.injectConfiguredAliases(ctx, healthyModels)
-	if err != nil {
-		return nil, fmt.Errorf("failed to inject configured aliases: %w", err)
-	}
+	modelsWithAliases := a.injectConfiguredAliases(ctx, healthyModels)
 
 	providerModels, err := a.filterModelsByProvider(ctx, modelsWithAliases, providerType)
 	if err != nil {
@@ -253,9 +250,9 @@ func (a *Application) convertModelsToProviderFormat(models []*domain.UnifiedMode
 // injectConfiguredAliases injects configured model aliases into the model list.
 // If ModelAliasesMode is "hidden" or "append", creates synthetic UnifiedModel entries
 // for each alias. In "hidden" mode, filters out target models that appear in any alias.
-func (a *Application) injectConfiguredAliases(ctx context.Context, models []*domain.UnifiedModel) ([]*domain.UnifiedModel, error) {
+func (a *Application) injectConfiguredAliases(ctx context.Context, models []*domain.UnifiedModel) []*domain.UnifiedModel {
 	if a.aliasResolver == nil || a.Config.ModelAliasesMode == "disabled" {
-		return models, nil
+		return models
 	}
 
 	// Collect all target model names from configured aliases
@@ -310,7 +307,7 @@ func (a *Application) injectConfiguredAliases(ctx context.Context, models []*dom
 	}
 	// "append" mode: keep all models + add aliases
 
-	return append(models, aliasModels...), nil
+	return append(models, aliasModels...)
 }
 
 // getUnifiedModelByName retrieves a unified model by its ID or native name
