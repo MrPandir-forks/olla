@@ -38,7 +38,7 @@ services:
     #           capabilities: [gpu]
 
   olla:
-    image: ghcr.io/thushan/olla:latest
+    image: ghcr.io/MrPandir-forks/olla:latest
     container_name: olla
     restart: unless-stopped
     ports:

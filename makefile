@@ -238,10 +238,10 @@ docker-build-local: build-web
 	@mkdir -p build
 	@cp config/docker.yaml build/docker-config.yaml
 	@echo "Building Docker image..."
-	@docker build -t ghcr.io/thushan/olla:local-$(DOCKER_ARCH) .
+	@docker build -t ghcr.io/MrPandir-forks/olla:local-$(DOCKER_ARCH) .
 	@echo "Cleaning up binary..."
 	@rm -f olla
-	@echo "Docker image built: ghcr.io/thushan/olla:local-$(DOCKER_ARCH)"
+	@echo "Docker image built: ghcr.io/MrPandir-forks/olla:local-$(DOCKER_ARCH)"
 	@docker images --filter reference='*olla*local*'
 
 # Build Docker image for ARM64 (convenience target)
@@ -266,7 +266,7 @@ docker-run:
 		-p 40114:40114 \
 		-v "$(shell pwd)/config/config.local.yaml:/config/config.yaml:ro" \
 		-e OLLA_CONFIG_FILE=/config/config.yaml \
-		ghcr.io/thushan/olla:local-amd64
+		ghcr.io/MrPandir-forks/olla:local-amd64
 
 # Test full release locally (binaries + docker + archives)
 release-test:

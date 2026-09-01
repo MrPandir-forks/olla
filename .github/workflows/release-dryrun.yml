@@ -67,7 +67,7 @@ jobs:
         # embedded an empty SPA, which only shows up as a 503 at runtime.
         run: |
           set -euo pipefail
-          docker run -d --name olla-dryrun -p 40114:40114 ghcr.io/thushan/olla:latest-amd64
+          docker run -d --name olla-dryrun -p 40114:40114 ghcr.io/MrPandir-forks/olla:latest-amd64
           for i in $(seq 1 30); do
             if curl -fsS -o /dev/null http://localhost:40114/internal/health; then break; fi
             sleep 1
@@ -92,7 +92,7 @@ jobs:
       - name: Image contents match the release manifest
         run: |
           set -euo pipefail
-          docker run --rm --entrypoint sh ghcr.io/thushan/olla:latest-amd64 -c 'find /app | sort'
+          docker run --rm --entrypoint sh ghcr.io/MrPandir-forks/olla:latest-amd64 -c 'find /app | sort'
 
       - name: Tear down
         if: always()
