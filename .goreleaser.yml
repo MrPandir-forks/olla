@@ -104,10 +104,8 @@ dockers:
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.description=High-performance LLM front-end load balancer and proxy"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
-    # The image_templates above are unconditional, so without this an RC tag
-    # would republish :latest, :v0 and :v0.0 to every user. "auto" skips the
-    # push for prereleases and snapshots only; a real tag publishes as normal.
-    skip_push: auto
+    # Push Docker images for all tags including prereleases.
+    skip_push: false
     extra_files:
       # Exactly what the Dockerfile COPYs, alongside the binary goreleaser adds.
       # Docker-flavoured config is staged under build/ by the before-hook above
@@ -134,10 +132,7 @@ dockers:
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.description=High-performance LLM front-end load balancer and proxy"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
-    # The image_templates above are unconditional, so without this an RC tag
-    # would republish :latest, :v0 and :v0.0 to every user. "auto" skips the
-    # push for prereleases and snapshots only; a real tag publishes as normal.
-    skip_push: auto
+    skip_push: false
     extra_files:
       # Exactly what the Dockerfile COPYs, alongside the binary goreleaser adds.
       # Docker-flavoured config is staged under build/ by the before-hook above
@@ -147,22 +142,22 @@ dockers:
       - config/profiles/
 
 docker_manifests:
-  - skip_push: auto
+  - skip_push: false
     name_template: ghcr.io/mrpandir-forks/olla:latest
     image_templates:
         - "ghcr.io/mrpandir-forks/olla:latest-amd64"
         - "ghcr.io/mrpandir-forks/olla:latest-arm64"
-  - skip_push: auto
+  - skip_push: false
     name_template: ghcr.io/mrpandir-forks/olla:{{ .Tag }}
     image_templates:
         - "ghcr.io/mrpandir-forks/olla:{{ .Tag }}-amd64"
         - "ghcr.io/mrpandir-forks/olla:{{ .Tag }}-arm64"
-  - skip_push: auto
+  - skip_push: false
     name_template: ghcr.io/mrpandir-forks/olla:v{{ .Major }}
     image_templates:
         - "ghcr.io/mrpandir-forks/olla:v{{ .Major }}-amd64"
         - "ghcr.io/mrpandir-forks/olla:v{{ .Major }}-arm64"
-  - skip_push: auto
+  - skip_push: false
     name_template: ghcr.io/mrpandir-forks/olla:v{{ .Major }}.{{ .Minor }}
     image_templates:
         - "ghcr.io/mrpandir-forks/olla:v{{ .Major }}.{{ .Minor }}-amd64"
