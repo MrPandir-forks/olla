@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/thushan/olla/internal/adapter/registry"
 	"github.com/thushan/olla/internal/core/constants"
@@ -251,7 +252,8 @@ func (a *Application) convertModelsToProviderFormat(models []*domain.UnifiedMode
 // If ModelAliasesMode is "hidden" or "append", creates synthetic UnifiedModel entries
 // for each alias. In "hidden" mode, filters out target models that appear in any alias.
 func (a *Application) injectConfiguredAliases(ctx context.Context, models []*domain.UnifiedModel) []*domain.UnifiedModel {
-	if a.aliasResolver == nil || a.Config.ModelAliasesMode == constants.StickyOutcomeResultDisabled {
+	// An unset mode must behave like "disabled" to keep listings backward compatible.
+	if a.aliasResolver == nil || a.Config.ModelAliasesMode == "" || a.Config.ModelAliasesMode == constants.StickyOutcomeResultDisabled {
 		return models
 	}
 
@@ -264,9 +266,17 @@ func (a *Application) injectConfiguredAliases(ctx context.Context, models []*dom
 		}
 	}
 
+	// Map iteration order is randomised, so sort to keep listings stable across calls.
+	aliasNames := make([]string, 0, len(allAliases))
+	for aliasName := range allAliases {
+		aliasNames = append(aliasNames, aliasName)
+	}
+	sort.Strings(aliasNames)
+
 	// Create synthetic alias models
 	var aliasModels []*domain.UnifiedModel
-	for aliasName, targetNames := range allAliases {
+	for _, aliasName := range aliasNames {
+		targetNames := allAliases[aliasName]
 		var mergedEndpoints []domain.SourceEndpoint
 		var firstTarget *domain.UnifiedModel
 

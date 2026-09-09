@@ -150,7 +150,7 @@ You can change this behavior with the `model_aliases_mode` configuration option:
 |------|-------------|
 | `disabled` (default) | Aliases are hidden from model listings. Only actual backend models are shown. |
 | `append` | Aliases are added to listings alongside their target models. Both alias and actual model names appear. |
-| `hidden` | Aliases are shown in listings, target models are hidden. Clients see only the alias (e.g., `my-llama`), not backend-specific names (e.g., `llama3.1:8b`). Target models remain accessible by direct request. |
+| `hidden` | Aliases are shown in listings, but their target models are excluded from the top-level listing. Target models remain accessible by direct request and are still visible through alias metadata (e.g., the `aliases` field). |
 
 Configuration example:
 
