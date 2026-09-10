@@ -146,16 +146,9 @@ func (r *StaticEndpointRepository) LoadFromConfig(ctx context.Context, configs [
 			return fmt.Errorf("invalid endpoint config for %q: %w", cfg.Name, err)
 		}
 
-		var resolved resolvedAuth
-		if cfg.Auth != nil {
-			if err := validateAuth(cfg.Name, cfg.Auth); err != nil {
-				return err
-			}
-			var rerr error
-			resolved, rerr = resolveAuth(cfg.Name, cfg.Auth)
-			if rerr != nil {
-				return rerr
-			}
+		resolved, err := resolveEndpointAuth(cfg.Name, cfg.Auth)
+		if err != nil {
+			return err
 		}
 
 		endpointURL, err := url.Parse(cfg.URL)
@@ -209,22 +202,9 @@ func (r *StaticEndpointRepository) LoadFromConfig(ctx context.Context, configs [
 		}
 
 		if len(cfg.Headers) > 0 {
-			resolvedHeaders := make(map[string]string, len(cfg.Headers))
-			var templateHeaders map[string]string
-			for k, v := range cfg.Headers {
-				if envresolver.HasGenerateToken(v) {
-					// Store raw template for per-request resolution.
-					if templateHeaders == nil {
-						templateHeaders = make(map[string]string, len(cfg.Headers))
-					}
-					templateHeaders[k] = v
-					continue
-				}
-				expanded, herr := envresolver.ExpandStrict(v)
-				if herr != nil {
-					return fmt.Errorf("endpoint %q: header %q: %w", cfg.Name, k, herr)
-				}
-				resolvedHeaders[k] = expanded
+			resolvedHeaders, templateHeaders, herr := resolveHeaders(cfg.Name, cfg.Headers)
+			if herr != nil {
+				return herr
 			}
 			if len(resolvedHeaders) > 0 {
 				newEndpoint.Headers = resolvedHeaders
@@ -242,6 +222,42 @@ func (r *StaticEndpointRepository) LoadFromConfig(ctx context.Context, configs [
 	r.mu.Unlock()
 
 	return nil
+}
+
+// resolveEndpointAuth validates and resolves auth config. Returns zero value when cfg is nil.
+func resolveEndpointAuth(name string, cfg *config.AuthConfig) (resolvedAuth, error) {
+	if cfg == nil {
+		return resolvedAuth{}, nil
+	}
+	if err := validateAuth(name, cfg); err != nil {
+		return resolvedAuth{}, err
+	}
+	resolved, err := resolveAuth(name, cfg)
+	if err != nil {
+		return resolvedAuth{}, err
+	}
+	return resolved, nil
+}
+
+// resolveHeaders separates static headers (env-expanded at load time) from
+// dynamic templates (containing ${generate:...} tokens resolved per-request).
+func resolveHeaders(endpointName string, headers map[string]string) (resolved, templates map[string]string, err error) {
+	resolved = make(map[string]string, len(headers))
+	for k, v := range headers {
+		if envresolver.HasGenerateToken(v) {
+			if templates == nil {
+				templates = make(map[string]string, len(headers))
+			}
+			templates[k] = v
+			continue
+		}
+		expanded, herr := envresolver.ExpandStrict(v)
+		if herr != nil {
+			return nil, nil, fmt.Errorf("endpoint %q: header %q: %w", endpointName, k, herr)
+		}
+		resolved[k] = expanded
+	}
+	return resolved, templates, nil
 }
 
 // resolveURLDefaults determines health check and model paths using fallback hierarchy:

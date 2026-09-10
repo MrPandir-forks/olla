@@ -40,7 +40,7 @@ func TestOpencodeSes_Generate(t *testing.T) {
 	require.NotNil(t, g)
 
 	t.Run("matches_opencode_format", func(t *testing.T) {
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			id := g.Generate()
 			assert.Regexp(t, opencodeSesPattern, id, "iteration %d: %q does not match OpenCode format", i, id)
 		}
@@ -48,7 +48,7 @@ func TestOpencodeSes_Generate(t *testing.T) {
 
 	t.Run("unique_across_calls", func(t *testing.T) {
 		seen := make(map[string]bool, 1000)
-		for i := 0; i < 1000; i++ {
+		for range 1000 {
 			id := g.Generate()
 			assert.False(t, seen[id], "duplicate ID generated: %q", id)
 			seen[id] = true
@@ -58,7 +58,7 @@ func TestOpencodeSes_Generate(t *testing.T) {
 	t.Run("concurrent_safety", func(t *testing.T) {
 		var wg sync.WaitGroup
 		ids := make([]string, 1000)
-		for i := 0; i < 1000; i++ {
+		for i := range 1000 {
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()

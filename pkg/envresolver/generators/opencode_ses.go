@@ -51,10 +51,10 @@ func (g *opencodeSesGenerator) generateWithPrefix(prefix string) string {
 	g.mu.Unlock()
 
 	// Encode timestamp*0x1000 + counter into 6 bytes, matching OpenCode's BigInt encoding.
-	encoded := int64(now)*0x1000 + int64(counter)
+	encoded := now*0x1000 + int64(counter)
 
 	timeBytes := make([]byte, 6)
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		timeBytes[i] = byte((encoded >> uint(40-8*i)) & 0xff)
 	}
 
