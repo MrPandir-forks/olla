@@ -210,14 +210,28 @@ func (r *StaticEndpointRepository) LoadFromConfig(ctx context.Context, configs [
 
 		if len(cfg.Headers) > 0 {
 			resolvedHeaders := make(map[string]string, len(cfg.Headers))
+			var templateHeaders map[string]string
 			for k, v := range cfg.Headers {
+				if envresolver.HasGenerateToken(v) {
+					// Store raw template for per-request resolution.
+					if templateHeaders == nil {
+						templateHeaders = make(map[string]string, len(cfg.Headers))
+					}
+					templateHeaders[k] = v
+					continue
+				}
 				expanded, herr := envresolver.ExpandStrict(v)
 				if herr != nil {
 					return fmt.Errorf("endpoint %q: header %q: %w", cfg.Name, k, herr)
 				}
 				resolvedHeaders[k] = expanded
 			}
-			newEndpoint.Headers = resolvedHeaders
+			if len(resolvedHeaders) > 0 {
+				newEndpoint.Headers = resolvedHeaders
+			}
+			if len(templateHeaders) > 0 {
+				newEndpoint.HeaderTemplates = templateHeaders
+			}
 		}
 
 		newEndpoints[urlString] = newEndpoint

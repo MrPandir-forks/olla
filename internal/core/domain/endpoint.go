@@ -29,7 +29,12 @@ type Endpoint struct {
 	ModelUrl         *url.URL
 	ModelFilter      *FilterConfig
 	// Headers holds verbatim outbound headers copied from endpoint config at load time.
-	Headers               map[string]string `json:"-"`
+	Headers map[string]string `json:"-"`
+	// HeaderTemplates holds raw header values containing ${generate:...} tokens.
+	// These are resolved per-request at proxy time, not at config load time.
+	// Never serialised: templates may contain generate directives that should
+	// not be exposed through status endpoints.
+	HeaderTemplates       map[string]string `json:"-"`
 	Name                  string
 	Type                  string `json:"type,omitempty"`
 	Status                EndpointStatus

@@ -340,3 +340,120 @@ func TestExpandWithFile(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
+// --- HasGenerateToken ---
+
+func TestHasGenerateToken(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"${generate:opencode-ses}", true},
+		{"prefix-${generate:opencode-ses}-suffix", true},
+		{"no generate token here", false},
+		{"", false},
+		{"${OTHER_VAR}", false},
+		{"${generate:}", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			assert.Equal(t, tt.want, HasGenerateToken(tt.input))
+		})
+	}
+}
+
+// --- ExpandDynamic ---
+
+func TestExpandDynamic(t *testing.T) {
+	t.Run("static_value_unchanged", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		got := ExpandDynamic("static-value", ctx)
+		assert.Equal(t, "static-value", got)
+	})
+
+	t.Run("env_var_expanded", func(t *testing.T) {
+		t.Setenv("OLLA_DYN_TEST_KEY", "env-val")
+		ctx := NewDynamicHeaderContext()
+		got := ExpandDynamic("${OLLA_DYN_TEST_KEY}", ctx)
+		assert.Equal(t, "env-val", got)
+	})
+
+	t.Run("generate_token_resolved", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		got := ExpandDynamic("${generate:opencode-ses}", ctx)
+		assert.Regexp(t, `^ses_[0-9a-f]{12}[0-9A-Za-z]{14}$`, got)
+	})
+
+	t.Run("same_generator_same_value", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		v1 := ExpandDynamic("${generate:opencode-ses}", ctx)
+		v2 := ExpandDynamic("${generate:opencode-ses}", ctx)
+		assert.Equal(t, v1, v2)
+	})
+
+	t.Run("mixed_env_and_generate", func(t *testing.T) {
+		t.Setenv("OLLA_DYN_MIXED", "envpart")
+		ctx := NewDynamicHeaderContext()
+		got := ExpandDynamic("${OLLA_DYN_MIXED}-${generate:opencode-ses}", ctx)
+		assert.Regexp(t, `^envpart-ses_[0-9a-f]{12}[0-9A-Za-z]{14}$`, got)
+	})
+
+	t.Run("unknown_generator_resolves_to_empty", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		got := ExpandDynamic("${generate:nonexistent}", ctx)
+		assert.Equal(t, "", got)
+	})
+
+	t.Run("nil_ctx_leaves_generate_token_untouched", func(t *testing.T) {
+		got := ExpandDynamic("${generate:opencode-ses}", nil)
+		assert.Equal(t, "${generate:opencode-ses}", got)
+	})
+}
+
+// --- ExpandDynamicStrict ---
+
+func TestExpandDynamicStrict(t *testing.T) {
+	t.Run("static_value_no_error", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		got, err := ExpandDynamicStrict("static-value", ctx)
+		require.NoError(t, err)
+		assert.Equal(t, "static-value", got)
+	})
+
+	t.Run("valid_generate_no_error", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		got, err := ExpandDynamicStrict("${generate:opencode-ses}", ctx)
+		require.NoError(t, err)
+		assert.Regexp(t, `^ses_[0-9a-f]{12}[0-9A-Za-z]{14}$`, got)
+	})
+
+	t.Run("unknown_generate_returns_error", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		_, err := ExpandDynamicStrict("${generate:unknown-gen}", ctx)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown-gen")
+	})
+
+	t.Run("missing_env_var_returns_error", func(t *testing.T) {
+		ctx := NewDynamicHeaderContext()
+		_, err := ExpandDynamicStrict("${OLLA_DYN_STRICT_MISSING_XYZ}", ctx)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "OLLA_DYN_STRICT_MISSING_XYZ")
+	})
+}
+
+// --- DynamicHeaderContext ---
+
+func TestDynamicHeaderContext_SharedValues(t *testing.T) {
+	ctx := NewDynamicHeaderContext()
+
+	// Same generator name returns same value.
+	v1 := ctx.Get("opencode-ses")
+	v2 := ctx.Get("opencode-ses")
+	assert.Equal(t, v1, v2)
+	assert.Regexp(t, `^ses_[0-9a-f]{12}[0-9A-Za-z]{14}$`, v1)
+
+	// Different generator names return different values.
+	v3 := ctx.Get("nonexistent")
+	assert.Equal(t, "", v3)
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/thushan/olla/internal/core/domain"
 	"github.com/thushan/olla/internal/core/ports"
 	"github.com/thushan/olla/internal/version"
+	"github.com/thushan/olla/pkg/envresolver"
 )
 
 var (
@@ -98,6 +99,19 @@ func CopyHeaders(proxyReq, originalReq *http.Request, endpoint *domain.Endpoint)
 	if endpoint != nil {
 		for name, value := range endpoint.Headers {
 			proxyReq.Header.Set(name, value)
+		}
+
+		// Resolve dynamic headers (${generate:...} tokens) per-request.
+		// A shared DynamicHeaderContext ensures all headers referencing the same
+		// generator name receive the same value within a single request.
+		if len(endpoint.HeaderTemplates) > 0 {
+			ctx := envresolver.NewDynamicHeaderContext()
+			for name, template := range endpoint.HeaderTemplates {
+				resolved := envresolver.ExpandDynamic(template, ctx)
+				if resolved != "" {
+					proxyReq.Header.Set(name, resolved)
+				}
+			}
 		}
 
 		// Auth wins over anything in the headers: map and over anything the client sent.
@@ -216,6 +230,9 @@ func CopyResponseHeaders(dst http.Header, src http.Header, endpoint *domain.Endp
 			deny[http.CanonicalHeaderKey(endpoint.AuthHeaderName)] = struct{}{}
 		}
 		for name := range endpoint.Headers {
+			deny[http.CanonicalHeaderKey(name)] = struct{}{}
+		}
+		for name := range endpoint.HeaderTemplates {
 			deny[http.CanonicalHeaderKey(name)] = struct{}{}
 		}
 	}

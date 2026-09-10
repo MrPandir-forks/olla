@@ -160,6 +160,7 @@ nav:
       - Endpoint Auth: configuration/endpoint-auth.md
       - Remote Backends (Experimental): configuration/endpoint-auth-remote.md
       - Filters: configuration/filters.md
+      - Dynamic Headers: configuration/dynamic-headers.md
       - Reference: configuration/reference.md
       - Examples: configuration/examples.md
       - Best Practices:

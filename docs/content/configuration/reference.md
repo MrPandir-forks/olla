@@ -363,7 +363,7 @@ discovery:
 
 #### Custom Outbound Headers (`headers:`)
 
-`headers:` is a free-form map of header names to values. All entries are copied verbatim onto every request forwarded to that endpoint. `auth:` and `headers:` can coexist; the `auth:` block always wins for its own credential header. `${VAR}` interpolation applies to values.
+`headers:` is a free-form map of header names to values. All entries are copied verbatim onto every request forwarded to that endpoint. `auth:` and `headers:` can coexist; the `auth:` block always wins for its own credential header. `${VAR}` interpolation applies to values. Use `${generate:NAME}` for auto-generated per-request values -- see [Dynamic Headers](dynamic-headers.md).
 
 ```yaml
       - url: "http://custom-llm:9000"
@@ -372,6 +372,8 @@ discovery:
         headers:
           X-Tenant-ID: "acme"
           X-Request-Source: "olla"
+          x-session-affinity: "${generate:opencode-ses}"   # auto-generated per request
+          x-session-id: "${generate:opencode-ses}"         # same value as above
 ```
 
 #### URL Configuration

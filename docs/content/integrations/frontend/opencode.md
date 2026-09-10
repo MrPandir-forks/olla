@@ -445,6 +445,23 @@ discovery:
         check_timeout: 5s
 ```
 
+**Session Affinity Headers** (for backends that track sessions):
+
+```yaml
+discovery:
+  static:
+    endpoints:
+      - url: http://localhost:11434
+        name: local-ollama
+        type: ollama
+        priority: 100
+        headers:
+          x-session-affinity: "${generate:opencode-ses}"
+          x-session-id: "${generate:opencode-ses}"
+```
+
+Olla auto-generates a unique session ID (e.g. `ses_f740de905ffegYXvX2mVOV2M8C`) on each request and sets both headers to the same value. See [Dynamic Headers](../../configuration/dynamic-headers.md) for details.
+
 ## Usage
 
 ### Selecting Models

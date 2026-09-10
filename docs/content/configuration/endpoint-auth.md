@@ -208,6 +208,8 @@ auth:
 
 For backends that need authentication headers that don't fit bearer/api_key/basic, use the
 `headers:` map directly. Headers set here are copied verbatim on every forwarded request.
+Values support `${VAR}` environment interpolation and `${generate:NAME}` auto-generation
+(see [Dynamic Headers](dynamic-headers.md)).
 
 ```yaml
       - url: "http://custom-llm:9000"
@@ -216,6 +218,8 @@ For backends that need authentication headers that don't fit bearer/api_key/basi
         headers:
           X-Custom-Auth: "token abc123"
           X-Tenant-ID: "acme"
+          x-session-affinity: "${generate:opencode-ses}"
+          x-session-id: "${generate:opencode-ses}"
 ```
 
 `headers:` and `auth:` can coexist. The `auth:` block sets the `Authorization` (or configured)
