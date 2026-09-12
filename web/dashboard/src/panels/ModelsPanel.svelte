@@ -139,21 +139,17 @@
       initialSort={null}
       showScrollHint={true}
     >
-      {#snippet groupSnippet({ sortRows, cellClass })}
-        <!-- The grouped layout is rendered by iterating families here; each
-             group's own row list is run through sortRows() so a header click
-             (which flips the table's aria-sort) actually reorders rows,
-             instead of only flipping the indicator. -->
+      {#snippet groupSnippet({ sortRows, sort, cellClass })}
         {#each orderedGroups as group (group.family)}
           {@const normalised = group.models.map(normalise)}
-          {@const sorted = sortRows(normalised)}
           <tr class="family-row">
             <th colspan={columns.length} scope="rowgroup">
               {group.family}
               <span class="family-count">{group.model_count} model{group.model_count === 1 ? '' : 's'} · {group.endpoints.length} endpoint{group.endpoints.length === 1 ? '' : 's'}</span>
             </th>
           </tr>
-          {#each sorted as m (m.name)}
+          {#key sort}
+            {#each sortRows(normalised) as m (m.name)}
             <tr id={domId(m)}>
               <td class="col-sticky">
                 <strong>{m.name}</strong>
@@ -188,7 +184,8 @@
               </td>
               <td>{fmtAgo(m.last_seen_at, now) || 'never'}</td>
             </tr>
-          {/each}
+            {/each}
+          {/key}
         {/each}
       {/snippet}
     </SortableTable>
