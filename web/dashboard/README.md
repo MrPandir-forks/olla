@@ -47,6 +47,28 @@ source) from this tree. The build and release targets run it automatically befor
 so a shipped binary always carries the current SPA. Run it manually only when iterating on
 the Go side while you also want a fresh dashboard embedded.
 
+### Local development with mock backends
+
+The Vite dev server proxies API requests (`/internal/status*`, `/olla/*`, `/version`) to a
+running Olla instance. By default it targets `http://127.0.0.1:41141`; override with the
+`OLLA_URL` env var:
+
+```bash
+OLLA_URL=http://127.0.0.1:41150 bun run dev
+```
+
+For a full local stack with mock backends (no real inference needed):
+
+```bash
+./test/scripts/local-dashboard-test.sh
+```
+
+This starts two ollamock instances, builds and runs Olla against them, then launches the Vite
+dev server. The Models tab will show a family group with models having different endpoint
+counts (e.g. `shared-model` on 2 endpoints, others on 1) so you can test column sorting.
+
+Open http://localhost:5173/internal/ui/ and go to the Models tab.
+
 ## Architecture
 
 Component tree, polling model, formatting and theming for the implementation. Every source

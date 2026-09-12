@@ -28,6 +28,11 @@ function restoreGitkeep() {
 // Served at /internal/ui/ on the proxy listener. The Go go:embed handler
 // mounts under that subpath, so the SPA must request its hashed assets from
 // /internal/ui/assets/... rather than the site root.
+
+// Local dev proxy: forwards API requests to a running Olla instance.
+// Override with OLLA_URL env var if Olla runs on a non-default port.
+const OLLA_TARGET = process.env.OLLA_URL || 'http://127.0.0.1:41141';
+
 export default defineConfig({
   base: '/internal/ui/',
   plugins: [svelte(), tailwindcss(), restoreGitkeep()],
@@ -35,6 +40,16 @@ export default defineConfig({
     outDir: EMBED_DIST,
     emptyOutDir: true,
     sourcemap: false,
+  },
+  server: {
+    proxy: {
+      '/internal/status': OLLA_TARGET,
+      '/internal/health': OLLA_TARGET,
+      '/internal/stats': OLLA_TARGET,
+      '/internal/process': OLLA_TARGET,
+      '/olla': OLLA_TARGET,
+      '/version': OLLA_TARGET,
+    },
   },
   // Vitest runs under Node, but component tests mount real Svelte components
   // (see SortableTable.test.js) - without this, svelte resolves to its
