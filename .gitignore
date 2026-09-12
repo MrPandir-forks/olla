@@ -22,6 +22,7 @@ docker-compose.override.yaml
 build/
 dist/
 .venv/
+node_modules/
 
 # Dashboard embed source: regenerated at build time by `make build-web` and
 # gitignored. Only the .gitkeep sentinel stays committed so //go:embed is
