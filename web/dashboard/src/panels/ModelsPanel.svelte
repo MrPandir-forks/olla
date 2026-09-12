@@ -10,14 +10,14 @@
   import type { ModelSummary } from '../lib/types';
 
   // View-model row: the contract row plus derived numeric fields the table
-  // sorts on (size_bytes from the size string, endpoints_count from the
+  // sorts on (size_bytes from the size string, endpoint_name from the
   // endpoints list length). Omit+intersect so the row type flows through a
   // mapped type, which picks up the implicit index signature required by
   // SortableTable's `Row extends Record<string, unknown>` constraint; a
   // plain `ModelSummary & {...}` intersection does not.
   type ModelRow = Omit<ModelSummary, never> & {
     size_bytes: number;
-    endpoints_count: number;
+    endpoint_name: string;
   };
 
   const loading = $derived(models.status === 'loading');
@@ -49,7 +49,7 @@
     { key: 'params', label: 'Params', sortable: true },
     { key: 'quant', label: 'Quant', sortable: true },
     { key: 'size_bytes', label: 'Size', sortable: true, num: true, align: 'right' },
-    { key: 'endpoints_count', label: 'Endpoints', sortable: true, num: true, align: 'right' },
+    { key: 'endpoint_name', label: 'Endpoints', sortable: true, align: 'right' },
     { key: 'last_seen_at', label: 'Last seen', sortable: false },
   ];
 
@@ -67,7 +67,7 @@
     return {
       ...m,
       size_bytes: sizeBytesOf(m),
-      endpoints_count: m.endpoints?.length ?? 0,
+      endpoint_name: m.endpoints?.length ? m.endpoints[0] : '',
     };
   }
 
@@ -160,7 +160,7 @@
               <td>{m.params || '—'}</td>
               <td>{m.quant || '—'}</td>
               <td class={cellClass('size_bytes')}>{m.size || '—'}</td>
-              <td class={cellClass('endpoints_count')}>
+              <td class={cellClass('endpoint_name')}>
                 {#if m.endpoints?.length}
                   <div class="endpoint-pills">
                     {#each m.endpoints as ep, i}
@@ -201,7 +201,7 @@
         <td>{m.params || '—'}</td>
         <td>{m.quant || '—'}</td>
         <td class={cellClass('size_bytes')}>{m.size || '—'}</td>
-        <td class={cellClass('endpoints_count')}>
+        <td class={cellClass('endpoint_name')}>
           {#if m.endpoints?.length}
             <div class="endpoint-pills">
               {#each m.endpoints as ep, i}
